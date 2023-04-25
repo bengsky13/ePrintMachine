@@ -57,14 +57,19 @@ class ApiControllers extends Controller
         $status = $this->getStatus("/api/" . $id . "/status");
         $jStatus = json_decode($status);
         if ($jStatus->status == 4) {
-            $this->doPrint($jStatus->print_type, $id);
-            label:
-            $a = exec("lpstat -W not-completed");
-            if ($a == "") {
-                $this->getStatus("/api/" . $id . "/destroy");
+            if (getenv("PRINTING_DRIVER") == "printnode") {
+
             } else {
-                sleep(5);
-                goto label;
+
+                $this->doPrint($jStatus->print_type, $id);
+                label:
+                $a = exec("lpstat -W not-completed");
+                if ($a == "") {
+                    $this->getStatus("/api/" . $id . "/destroy");
+                } else {
+                    sleep(5);
+                    goto label;
+                }
             }
 
         }
