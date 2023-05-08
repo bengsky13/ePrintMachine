@@ -24,8 +24,8 @@
     <title>ePrint</title>
 </head>
 
-<body>
-    <div class="center">
+<body onload="JavaScript:setTimeout(timedCheck,10000);">
+<div class="center">
         <div class="text-center" id="qr">
             <img class="qr-code" />
         </div>
@@ -70,17 +70,19 @@
             $('.qr-code').attr('src', finalURL);
             $("#link").attr("href", baseUrl + '/' + sessionId)
 
-            $.get('/api/' + sessionId + '/init').then((result) => {
+            $.get('index.php/api/' + sessionId + '/init').then((result) => {
                 result = JSON.parse(result)
                 if(result.success == true)
+                {
                     sessionCheck()
+                }
                 else
                 {
                     $("#qr").hide()
-                    $("#label").html("<h1>Printer Not Found Please Configure on website</h1>");
+                    $("#label").html("<h1>Error</h1>");
                     setTimeout(function() {
                         location.reload();
-                    }, 30000);
+                    }, 5000);
                 }
                 
             })
@@ -101,7 +103,7 @@
             const sessionCheck = async () => {
                 while (true) {
                     try {
-                        await $.get('/api/' + sessionId).then((result) => {
+                        await $.get('index.php/api/' + sessionId).then((result) => {
                             if (result.status == 1) {
                                 $("#qr").hide()
                                 $("#spinner").show()
@@ -112,13 +114,6 @@
                                 $("#label").html("<h1>Please Choose print option</h1>");
                             }
                             else if (result.status == 3) {
-                                if (result.status_code == 201) {
-                                }
-                                else if (result.status_code == 200) {
-                                }
-                                else {
-                                    location.reload()
-                                }
 
                                 if (date == false) {
                                     date = new Date(result.time).getTime();
@@ -146,6 +141,12 @@
                 }
             }
         });
+        function timedCheck(timeoutPeriod) {
+            if(checkJSNetConnection()==false){
+            }else{
+                location.reload(true);
+            }
+        }
     </script>
 </body>
 
