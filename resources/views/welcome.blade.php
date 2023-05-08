@@ -39,14 +39,6 @@
         <div class="text-center" id="label">
 
         </div>
-        <div class="text-center" id="paymentQr" style="display: none">
-            <h1>QRIS</h1>
-            <h1 id="totalPayment"></h1>
-            <img id="qrPayment" class="qr-code" style="width: 70%;" />
-            <div class="col">
-                <h1 id="countdown">00:00</h1>
-            </div>
-        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.js">
     </script>
@@ -132,12 +124,8 @@
                                     date = new Date(result.time).getTime();
                                 }
                                 $("#qr").hide()
-                                $("#spinner").hide()
-                                $("#price").hide()
-                                $("#label").hide()
-                                $("#paymentQr").show()
-                                $("#totalPayment").html("Payment Rp. " + result.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","))
-                                $("#qrPayment").attr("src", result.qr)
+                                $("#spinner").show()
+                                $("#label").html("<h1>Please Pay</h1>");
                             }
                             else if (result.status == 4) {
                                 $("#paymentQr").hide()
@@ -149,7 +137,7 @@
                                 $("#label").html("<h1>Printing</h1>");
                             }
 
-                            else if (result.status == 5) {
+                            else if (result.status == 6) {
                                 location.reload();
                             }
                         });

@@ -13,9 +13,11 @@ class ApiControllers extends Controller
     {
         $printers = Printing::printers();
         foreach ($printers as $list) {
-            if ($list->status() == "idle")
+            if ($list->status() == "idle" || $list->status() == "online")
                 $this->printerList[] = $list->id();
         }
+        $printers = Printing::printer(getenv("PRINTER_ID"));
+
 
     }
     private function getStatus($path)
@@ -39,8 +41,17 @@ class ApiControllers extends Controller
     private function doPrint($print_type, $id)
     {
         $doc = getenv("BASE_URL") . "/uploads/$id/$id.pdf";
-        $printer = $print_type == 0 ? "BNW" : "COLOR";
-        file_put_contents('file.pdf', file_get_contents($doc));
+        if (getenv("PRINTING_DRIVER") == "printnode") {
+            $printer = getenv("PRINTER_ID");
+        } else {
+            $printer = $print_type == 0 ? "BNW" : "COLOR";
+        }
+        if ($print_type == 0) {
+            file_put_contents('input.pdf', file_get_contents($doc));
+            exec("gs -sDEVICE=pdfwrite -sProcessColorModel=DeviceGray -sColorConversionStrategy=Gray -dOverrideICC -o file.pdf -f input.pdf");
+        } else {
+            file_put_contents('file.pdf', file_get_contents($doc));
+        }
         Printing::newPrintTask()
             ->printer($printer)->file('file.pdf')->send();
     }
@@ -54,14 +65,17 @@ class ApiControllers extends Controller
     }
     public function status($id)
     {
+
         $status = $this->getStatus("/api/" . $id . "/status");
         $jStatus = json_decode($status);
         if ($jStatus->status == 4) {
-            if (getenv("PRINTING_DRIVER") == "printnode") {
+            $this->doPrint($jStatus->print_type, $id);
 
+            if (getenv("PRINTING_DRIVER") == "printnode") {
+                // $this->getStatus("/api/" . $id . "/printnode");
+                $this->getStatus("/api/" . $id . "/destroy");
             } else {
 
-                $this->doPrint($jStatus->print_type, $id);
                 label:
                 $a = exec("lpstat -W not-completed");
                 if ($a == "") {
